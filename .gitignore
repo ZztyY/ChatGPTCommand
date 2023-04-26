@@ -25,3 +25,4 @@ dump.rdb
 *.rar
 
 config.json
+config.json.example
