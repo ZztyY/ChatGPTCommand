@@ -44,6 +44,8 @@ func main() {
 	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
 
 	go func() {
+		var messages []Message
+		messages = append(messages, Message{Role: "system", Content: "You are a helpful assistant."})
 		// 循环监听用户输入
 		for {
 			fmt.Print("提问：")
@@ -52,7 +54,7 @@ func main() {
 			command := scanner.Text()
 
 			// 调用处理输入的函数
-			result := processCommand(command, config)
+			result := processCommand(command, config, &messages)
 
 			// 输出回复
 			fmt.Println("回复：", result)
@@ -100,17 +102,15 @@ type GPT3Response struct {
 }
 
 // 处理输入的函数
-func processCommand(command string, config Config) string {
+func processCommand(command string, config Config, messages *[]Message) string {
 	// 定义请求的URL和请求体
 	url := config.OpenaiProxy
+	*messages = append(*messages, Message{Role: "user", Content: command})
 
 	// 创建一个请求体
 	requestBody := GPT3Request{
 		Model: "gpt-3.5-turbo",
-		Messages: []Message {
-			{Role: "system", Content: "You are a helpful assistant."},
-			{Role: "user", Content: command},
-		},
+		Messages: *messages,
 	}
 
 	// 将请求体序列化为JSON格式
@@ -163,6 +163,7 @@ func processCommand(command string, config Config) string {
 			return "解析JSON响应失败"
 		}
 		generatedText := response.Choices[0].Message.Content
+		*messages = append(*messages, Message{Role: response.Choices[0].Message.Role, Content: generatedText})
 		return generatedText
 	} else {
 		fmt.Println(resp.StatusCode)
