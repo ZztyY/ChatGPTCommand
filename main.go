@@ -31,10 +31,12 @@ func main() {
 	if err != nil {
 		fmt.Println("配置文件JSON序列化失败", err)
 	}
-	if config.OpenaiProxy == "" || config.OpenaiApiKey == "" {
+	if config.OpenaiProxy == "" && config.OpenaiApiKey == "" {
 		fmt.Println("请配置 config.json, 填入你的 openai api key 和代理地址")
 		time.Sleep(time.Second * 5)
 		os.Exit(0)
+	} else if config.OpenaiProxy == "" {
+		config.OpenaiProxy = "https://api.openai.com/v1/chat/completions"
 	}
 	fmt.Println("欢迎使用命令行程序，按下 Ctrl + C 可以退出。")
 
